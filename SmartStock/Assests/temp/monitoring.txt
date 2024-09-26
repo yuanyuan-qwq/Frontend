@@ -1,0 +1,66 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using AForge.Video.DirectShow;
+using WebSocketSharp;
+
+
+namespace SmartStock.View
+{
+    public partial class MonitoringForm : Form
+    {
+
+        WebSocket ws1; // WebSocket for stockcam1
+        WebSocket ws2; // WebSocket for cam2
+
+        public MonitoringForm()
+        {
+            InitializeComponent();
+            // Initialize WebSocket connections
+            ws1 = new WebSocket("ws://127.0.0.1:8765");
+            ws1.OnMessage += Ws1_OnMessage;
+            ws1.Connect();
+
+            ws2 = new WebSocket("ws://127.0.0.1:8766");
+            ws2.OnMessage += Ws2_OnMessage;
+            ws2.Connect();
+        }
+
+
+        private void Ws1_OnMessage(object sender, MessageEventArgs e)
+        {
+            var bytes = e.RawData;
+            using (var ms = new MemoryStream(bytes))
+            {
+                var image = Image.FromStream(ms);
+                pictureBox1.Image = image;  // Display the image in PictureBox1
+            }
+        }
+
+        private void Ws2_OnMessage(object sender, MessageEventArgs e)
+        {
+            var bytes = e.RawData;
+            using (var ms = new MemoryStream(bytes))
+            {
+                var image = Image.FromStream(ms);
+                pictureBox2.Image = image;  // Display the image in PictureBox2
+            }
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+            // Create an instance of the VideoPopupForm
+            cam1 videoPopupForm = new cam1();
+
+            // Show the VideoPopupForm as a modal dialog
+            videoPopupForm.ShowDialog();
+        }
+    }
+}
